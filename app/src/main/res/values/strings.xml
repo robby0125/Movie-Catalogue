@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Movie Catalogue</string>
+    <string name="release_date">Release Date</string>
+    <string name="overview">Overview</string>
+    <string name="status">Status</string>
+    <string name="movies">MOVIES</string>
+    <string name="tvshows">TV SHOWS</string>
+    <string name="search">Search</string>
+    <string name="empty_result">Empty Result</string>
+</resources>
