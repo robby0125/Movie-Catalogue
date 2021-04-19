@@ -5,11 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.robby.moviecatalogue.databinding.FragmentMovieListBinding
 import com.robby.moviecatalogue.ui.content.ContentsAdapter
 import com.robby.moviecatalogue.ui.content.ContentsViewModel
+import com.robby.moviecatalogue.utils.ContentType
+import org.koin.android.ext.android.inject
 
 class MovieListFragment : Fragment() {
 
@@ -26,9 +27,19 @@ class MovieListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val viewModel: ContentsViewModel by viewModels()
-        val adapter = ContentsAdapter()
-        adapter.setListContents(viewModel.getMovies())
+        val viewModel: ContentsViewModel by inject()
+        val adapter = ContentsAdapter(ContentType.MOVIE)
+
+        binding.rvMovies.visibility = View.INVISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+
+        viewModel.getMovieDiscover().observe(viewLifecycleOwner, {
+            binding.rvMovies.visibility = View.VISIBLE
+            binding.progressBar.visibility = View.GONE
+
+            adapter.setListContents(it)
+            adapter.notifyDataSetChanged()
+        })
 
         with(binding.rvMovies) {
             layoutManager = LinearLayoutManager(context)

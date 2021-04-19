@@ -1,21 +1,21 @@
 package com.robby.moviecatalogue.ui.search
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.robby.moviecatalogue.data.Content
-import com.robby.moviecatalogue.utils.DataDummy
+import com.robby.moviecatalogue.data.model.local.ContentEntity
+import com.robby.moviecatalogue.data.source.LocalRepository
+import com.robby.moviecatalogue.utils.ContentType
 
-class SearchViewModel : ViewModel() {
-    fun getContentResult(query: String, type: Int): ArrayList<Content> {
-        val contentResult = ArrayList<Content>()
+class SearchViewModel(private val repo: LocalRepository) : ViewModel() {
 
-        val contents = if (type == 0) DataDummy.getDummyMovies() else DataDummy.getDummyTvShows()
+    private lateinit var query: String
+    private lateinit var type: ContentType
 
-        for (content in contents) {
-            if (content.title.contains(query, true)) {
-                contentResult.add(content)
-            }
-        }
-
-        return contentResult
+    fun setQueryAndType(query: String, type: ContentType) {
+        this.query = query
+        this.type = type
     }
+
+    fun getSearchResult(): LiveData<List<ContentEntity>> =
+        if (type == ContentType.MOVIE) repo.searchMovies(query) else repo.searchTvShows(query)
 }

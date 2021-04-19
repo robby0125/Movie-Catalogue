@@ -11,6 +11,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.robby.moviecatalogue.R
 import com.robby.moviecatalogue.databinding.ActivityHomeBinding
 import com.robby.moviecatalogue.ui.search.SearchActivity
+import com.robby.moviecatalogue.utils.ContentType
 
 class HomeActivity : AppCompatActivity() {
 
@@ -66,9 +67,11 @@ class HomeActivity : AppCompatActivity() {
             setOnQueryTextListener(object :
                 androidx.appcompat.widget.SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
+                    val searchType = if (curTabIndex == 0) ContentType.MOVIE else ContentType.TV
+
                     val searchIntent = Intent(this@HomeActivity, SearchActivity::class.java)
                     searchIntent.putExtra(SearchActivity.EXTRA_QUERY, query)
-                    searchIntent.putExtra(SearchActivity.EXTRA_TYPE, curTabIndex)
+                    searchIntent.putExtra(SearchActivity.EXTRA_TYPE, searchType)
                     startActivity(searchIntent)
 
                     return true

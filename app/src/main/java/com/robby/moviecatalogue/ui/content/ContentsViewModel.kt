@@ -1,12 +1,13 @@
 package com.robby.moviecatalogue.ui.content
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.robby.moviecatalogue.data.Content
-import com.robby.moviecatalogue.utils.DataDummy
+import com.robby.moviecatalogue.data.model.local.ContentEntity
+import com.robby.moviecatalogue.data.source.LocalRepository
 
-class ContentsViewModel : ViewModel() {
+class ContentsViewModel(private val repo: LocalRepository) : ViewModel() {
 
-    fun getMovies(): ArrayList<Content> = DataDummy.getDummyMovies()
+    fun getMovieDiscover(): LiveData<List<ContentEntity>> = repo.getMovieDiscover()
 
-    fun getTvShows(): ArrayList<Content> = DataDummy.getDummyTvShows()
+    fun getTvDiscover(): LiveData<List<ContentEntity>> = repo.getTvDiscover()
 }

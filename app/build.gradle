@@ -16,7 +16,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        buildConfigField "String", "TMDB_API_KEY", "YOUR_API_KEY"
+        buildConfigField "String", "TMDB_API_KEY", '"b80d5988cbe04966fb41d43adf18901d"'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArgument "runnerBuilder", "de.mannodermaus.junit5.AndroidJUnit5Builder"
@@ -85,6 +85,9 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
+
+    // dependency injection
+    implementation 'org.koin:koin-android-viewmodel:2.2.2'
 
     // testing
     testImplementation 'junit:junit:4.13.2'

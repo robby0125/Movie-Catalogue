@@ -5,11 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.robby.moviecatalogue.databinding.FragmentTvShowListBinding
 import com.robby.moviecatalogue.ui.content.ContentsAdapter
 import com.robby.moviecatalogue.ui.content.ContentsViewModel
+import com.robby.moviecatalogue.utils.ContentType
+import org.koin.android.ext.android.inject
 
 class TvShowListFragment : Fragment() {
 
@@ -26,9 +27,19 @@ class TvShowListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val viewModel: ContentsViewModel by viewModels()
-        val adapter = ContentsAdapter()
-        adapter.setListContents(viewModel.getTvShows())
+        val viewModel: ContentsViewModel by inject()
+        val adapter = ContentsAdapter(ContentType.TV)
+
+        binding.rvTvShows.visibility = View.INVISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+
+        viewModel.getTvDiscover().observe(viewLifecycleOwner, {
+            binding.rvTvShows.visibility = View.VISIBLE
+            binding.progressBar.visibility = View.GONE
+
+            adapter.setListContents(it)
+            adapter.notifyDataSetChanged()
+        })
 
         with(binding.rvTvShows) {
             layoutManager = LinearLayoutManager(context)

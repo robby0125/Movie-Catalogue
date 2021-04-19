@@ -2,11 +2,12 @@ package com.robby.moviecatalogue.ui.search
 
 import android.os.Bundle
 import android.view.View
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.robby.moviecatalogue.databinding.ActivitySearchBinding
 import com.robby.moviecatalogue.ui.content.ContentsAdapter
+import com.robby.moviecatalogue.utils.ContentType
+import org.koin.android.ext.android.inject
 
 class SearchActivity : AppCompatActivity() {
 
@@ -21,25 +22,33 @@ class SearchActivity : AppCompatActivity() {
         val binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.rvSearchResult.visibility = View.INVISIBLE
+        binding.tvEmptyResult.visibility = View.INVISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+
         val query = intent.getStringExtra(EXTRA_QUERY)
-        val type = intent.getIntExtra(EXTRA_TYPE, 0)
+        val type = intent.getSerializableExtra(EXTRA_TYPE) as ContentType
+
+        val adapter = ContentsAdapter(type)
+
+        with(binding.rvSearchResult) {
+            layoutManager = LinearLayoutManager(this@SearchActivity)
+            setHasFixedSize(true)
+            this.adapter = adapter
+        }
 
         if (query != null) {
-            val viewModel: SearchViewModel by viewModels()
-            val contentResult = viewModel.getContentResult(query, type)
+            val viewModel: SearchViewModel by inject()
+            viewModel.setQueryAndType(query, type)
 
-            if (contentResult.size > 0) {
+            viewModel.getSearchResult().observe(this, {
+                binding.rvSearchResult.visibility = View.VISIBLE
                 binding.tvEmptyResult.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
 
-                val adapter = ContentsAdapter()
-                adapter.setListContents(contentResult)
-
-                with(binding.rvSearchResult) {
-                    layoutManager = LinearLayoutManager(this@SearchActivity)
-                    setHasFixedSize(true)
-                    this.adapter = adapter
-                }
-            } else binding.rvSearchResult.visibility = View.GONE
+                adapter.setListContents(it)
+                adapter.notifyDataSetChanged()
+            })
         }
 
         supportActionBar?.title = "Search Result"

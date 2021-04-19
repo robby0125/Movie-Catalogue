@@ -1,29 +1,24 @@
 package com.robby.moviecatalogue.ui.detail
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.robby.moviecatalogue.data.Content
-import com.robby.moviecatalogue.utils.DataDummy
+import com.robby.moviecatalogue.data.model.local.ContentEntity
+import com.robby.moviecatalogue.data.source.LocalRepository
+import kotlin.properties.Delegates
 
-class DetailViewModel : ViewModel() {
+class DetailViewModel(private val repo: LocalRepository) : ViewModel() {
 
-    private lateinit var contentId: String
+    private var contentId by Delegates.notNull<Int>()
 
-    fun setSelectedContentID(contentId: String) {
+    fun setSelectedContentID(contentId: Int) {
         this.contentId = contentId
     }
 
-    fun getContent(): Content {
-        lateinit var selectedContent: Content
+    fun getMovieDetail(): LiveData<ContentEntity> = repo.getMovieDetail(contentId)
 
-        val allContents = DataDummy.getAllDummyContents()
+    fun getTvDetail(): LiveData<ContentEntity> = repo.getTvDetail(contentId)
 
-        for (content in allContents) {
-            if (content.id == contentId) {
-                selectedContent = content
-                break
-            }
-        }
+    fun getMovieDetailWithQuery(): LiveData<ContentEntity> = repo.getMovieDetail(contentId)
 
-        return selectedContent
-    }
+    fun getTvDetailWithQuery(): LiveData<ContentEntity> = repo.getTvDetail(contentId)
 }
