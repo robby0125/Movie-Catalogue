@@ -31,14 +31,20 @@ class MovieListFragment : Fragment() {
         val adapter = ContentsAdapter(ContentType.MOVIE)
 
         binding.rvMovies.visibility = View.INVISIBLE
+        binding.noDataLayout.root.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.VISIBLE
 
         viewModel.getMovieDiscover().observe(viewLifecycleOwner, {
-            binding.rvMovies.visibility = View.VISIBLE
             binding.progressBar.visibility = View.GONE
 
-            adapter.setListContents(it)
-            adapter.notifyDataSetChanged()
+            if (it.isNotEmpty()) {
+                binding.rvMovies.visibility = View.VISIBLE
+
+                adapter.setListContents(it)
+                adapter.notifyDataSetChanged()
+            } else {
+                binding.noDataLayout.root.visibility = View.VISIBLE
+            }
         })
 
         with(binding.rvMovies) {

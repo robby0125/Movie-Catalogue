@@ -31,14 +31,20 @@ class TvShowListFragment : Fragment() {
         val adapter = ContentsAdapter(ContentType.TV)
 
         binding.rvTvShows.visibility = View.INVISIBLE
+        binding.noDataLayout.root.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.VISIBLE
 
         viewModel.getTvDiscover().observe(viewLifecycleOwner, {
-            binding.rvTvShows.visibility = View.VISIBLE
             binding.progressBar.visibility = View.GONE
 
-            adapter.setListContents(it)
-            adapter.notifyDataSetChanged()
+            if (it.isNotEmpty()) {
+                binding.rvTvShows.visibility = View.VISIBLE
+
+                adapter.setListContents(it)
+                adapter.notifyDataSetChanged()
+            } else {
+                binding.noDataLayout.root.visibility = View.VISIBLE
+            }
         })
 
         with(binding.rvTvShows) {

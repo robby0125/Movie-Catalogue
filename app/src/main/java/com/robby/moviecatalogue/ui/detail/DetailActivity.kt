@@ -3,7 +3,6 @@ package com.robby.moviecatalogue.ui.detail
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LiveData
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -38,10 +37,12 @@ class DetailActivity : AppCompatActivity() {
         val viewModel: DetailViewModel by inject()
         viewModel.setSelectedContentID(contentId)
 
+        contentQuery?.let { viewModel.setQuery(it) }
+
         binding.progressBar.visibility = View.VISIBLE
         binding.detailContent.visibility = View.INVISIBLE
 
-        val getDetail: LiveData<ContentEntity> =
+        val getDetail =
             if (contentQuery != null && contentQuery.isNotEmpty()) {
                 if (contentType == ContentType.MOVIE) viewModel.getMovieDetailWithQuery() else viewModel.getTvDetailWithQuery()
             } else {

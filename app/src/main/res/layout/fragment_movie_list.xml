@@ -22,7 +22,11 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_gravity="center"
-        android:visibility="gone"
-        tools:visibility="visible" />
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/no_data_layout"
+        layout="@layout/no_data_layout"
+        android:visibility="invisible" />
 
 </FrameLayout>

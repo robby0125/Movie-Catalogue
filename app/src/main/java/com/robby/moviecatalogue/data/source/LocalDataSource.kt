@@ -10,7 +10,11 @@ interface LocalDataSource {
 
     fun getMovieDetail(movieId: Int): LiveData<ContentEntity>
 
+    fun getMovieDetailWithQuery(movieId: Int, query: String): LiveData<ContentEntity>
+
     fun getTvDetail(tvId: Int): LiveData<ContentEntity>
+
+    fun getTvDetailWithQuery(tvId: Int, query: String): LiveData<ContentEntity>
 
     fun searchMovies(query: String): LiveData<List<ContentEntity>>
 

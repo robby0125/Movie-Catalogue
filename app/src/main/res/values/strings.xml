@@ -5,6 +5,7 @@
     <string name="movies">MOVIES</string>
     <string name="tvshows">TV SHOWS</string>
     <string name="search">Search</string>
-    <string name="empty_result">Empty Result</string>
     <string name="original_language">Original Language</string>
+    <string name="error_image">error image</string>
+    <string name="error_message">No data found!</string>
 </resources>

@@ -23,8 +23,8 @@ class SearchActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.rvSearchResult.visibility = View.INVISIBLE
-        binding.tvEmptyResult.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.VISIBLE
+        binding.noDataLayout.root.visibility = View.INVISIBLE
 
         val query = intent.getStringExtra(EXTRA_QUERY)
         val type = intent.getSerializableExtra(EXTRA_TYPE) as ContentType
@@ -42,12 +42,17 @@ class SearchActivity : AppCompatActivity() {
             viewModel.setQueryAndType(query, type)
 
             viewModel.getSearchResult().observe(this, {
-                binding.rvSearchResult.visibility = View.VISIBLE
-                binding.tvEmptyResult.visibility = View.GONE
                 binding.progressBar.visibility = View.GONE
 
-                adapter.setListContents(it)
-                adapter.notifyDataSetChanged()
+                if (it.isNotEmpty()) {
+                    binding.rvSearchResult.visibility = View.VISIBLE
+
+                    adapter.setListContents(it)
+                    adapter.setQuery(query)
+                    adapter.notifyDataSetChanged()
+                } else {
+                    binding.noDataLayout.root.visibility = View.VISIBLE
+                }
             })
         }
 

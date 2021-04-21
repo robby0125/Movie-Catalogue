@@ -3,31 +3,38 @@ package com.robby.moviecatalogue.ui.home
 import android.view.KeyEvent
 import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.robby.moviecatalogue.R
-import com.robby.moviecatalogue.utils.DataDummy
-import org.junit.Rule
+import com.robby.moviecatalogue.utils.EspressoIdlingResource
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 
 class HomeActivityTest {
 
-    private val dummyMovies = DataDummy.getDummyMovies()
-    private val dummyTvShows = DataDummy.getDummyTvShows()
+    @Before
+    fun setUp() {
+        ActivityScenario.launch(HomeActivity::class.java)
+        IdlingRegistry.getInstance().register(EspressoIdlingResource.idlingResource)
+    }
 
-    @get:Rule
-    val activityRule = ActivityScenarioRule(HomeActivity::class.java)
+    @After
+    fun tearDown() {
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.idlingResource)
+    }
 
     @Test
     fun loadMovies() {
         onView(withId(R.id.rv_movies)).check(matches(isDisplayed()))
         onView(withId(R.id.rv_movies)).perform(
             RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(
-                dummyMovies.size
+                5
             )
         )
     }
@@ -40,7 +47,6 @@ class HomeActivityTest {
         )
 
         onView(withId(R.id.tv_title)).check(matches(isDisplayed()))
-        onView(withId(R.id.tv_title)).check(matches(withText(dummyMovies[0].title)))
     }
 
     @Test
@@ -51,7 +57,7 @@ class HomeActivityTest {
         onView(withId(R.id.rv_tv_shows)).check(matches(isDisplayed()))
         onView(withId(R.id.rv_tv_shows)).perform(
             RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(
-                dummyTvShows.size
+                5
             )
         )
     }
@@ -63,11 +69,10 @@ class HomeActivityTest {
 
         onView(withId(R.id.rv_tv_shows)).check(matches(isDisplayed()))
         onView(withId(R.id.rv_tv_shows)).perform(
-            RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(2, click())
+            RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click())
         )
 
         onView(withId(R.id.tv_title)).check(matches(isDisplayed()))
-        onView(withId(R.id.tv_title)).check(matches(withText(dummyTvShows[2].title)))
     }
 
     @Test
@@ -75,7 +80,7 @@ class HomeActivityTest {
         onView(withId(R.id.search)).check(matches(isDisplayed()))
         onView(withId(R.id.search)).perform(click())
         onView(isAssignableFrom(EditText::class.java)).perform(
-            typeText("raya"),
+            typeText("raya and the"),
             pressKey(KeyEvent.KEYCODE_ENTER)
         )
 
@@ -99,7 +104,7 @@ class HomeActivityTest {
         onView(withId(R.id.search)).check(matches(isDisplayed()))
         onView(withId(R.id.search)).perform(click())
         onView(isAssignableFrom(EditText::class.java)).perform(
-            typeText("titan"),
+            typeText("on titan"),
             pressKey(KeyEvent.KEYCODE_ENTER)
         )
 

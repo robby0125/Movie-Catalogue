@@ -9,21 +9,35 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiService {
-    @GET("discover/movie?api_key=${BuildConfig.TMDB_API_KEY}")
-    fun getMovieDiscover(): Call<MoviesResponse>
+    @GET("discover/movie")
+    fun getMovieDiscover(
+        @Query("api_key") apiKey: String = BuildConfig.TMDB_API_KEY
+    ): Call<MoviesResponse>
 
-    @GET("discover/tv?api_key=${BuildConfig.TMDB_API_KEY}")
-    fun getTvDiscover(): Call<TvShowsResponse>
+    @GET("discover/tv")
+    fun getTvDiscover(
+        @Query("api_key") apiKey: String = BuildConfig.TMDB_API_KEY
+    ): Call<TvShowsResponse>
 
-    @GET("genre/movie/list?api_key=${BuildConfig.TMDB_API_KEY}")
-    fun getMovieGenreList(): Call<GenreListResponse>
+    @GET("genre/movie/list")
+    fun getMovieGenreList(
+        @Query("api_key") apiKey: String = BuildConfig.TMDB_API_KEY
+    ): Call<GenreListResponse>
 
-    @GET("genre/tv/list?api_key=${BuildConfig.TMDB_API_KEY}")
-    fun getTvShowGenreList(): Call<GenreListResponse>
+    @GET("genre/tv/list")
+    fun getTvShowGenreList(
+        @Query("api_key") apiKey: String = BuildConfig.TMDB_API_KEY
+    ): Call<GenreListResponse>
 
-    @GET("search/movie?api_key=${BuildConfig.TMDB_API_KEY}")
-    fun searchMovies(@Query("query") query: String): Call<MoviesResponse>
+    @GET("search/movie")
+    fun searchMovies(
+        @Query("query") query: String,
+        @Query("api_key") apiKey: String = BuildConfig.TMDB_API_KEY
+    ): Call<MoviesResponse>
 
-    @GET("search/tv?api_key=${BuildConfig.TMDB_API_KEY}")
-    fun searchTvShows(@Query("query") query: String): Call<TvShowsResponse>
+    @GET("search/tv")
+    fun searchTvShows(
+        @Query("query") query: String,
+        @Query("api_key") apiKey: String = BuildConfig.TMDB_API_KEY
+    ): Call<TvShowsResponse>
 }
