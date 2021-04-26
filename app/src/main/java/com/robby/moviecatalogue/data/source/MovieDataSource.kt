@@ -3,7 +3,7 @@ package com.robby.moviecatalogue.data.source
 import androidx.lifecycle.LiveData
 import com.robby.moviecatalogue.data.model.local.ContentEntity
 
-interface LocalDataSource {
+interface MovieDataSource {
     fun getMovieDiscover(): LiveData<List<ContentEntity>>
 
     fun getTvDiscover(): LiveData<List<ContentEntity>>

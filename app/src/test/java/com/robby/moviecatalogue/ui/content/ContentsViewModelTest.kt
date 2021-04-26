@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.nhaarman.mockitokotlin2.mock
 import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.source.LocalRepository
+import com.robby.moviecatalogue.data.source.MovieRepository
 import com.robby.moviecatalogue.utils.DataDummy
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
@@ -32,7 +32,7 @@ class ContentsViewModelTest : Spek({
 
     afterEachGroup { ArchTaskExecutor.getInstance().setDelegate(null) }
 
-    val localRepository = mock<LocalRepository>()
+    val localRepository = mock<MovieRepository>()
     val observer = mock<Observer<List<ContentEntity>>>()
 
     val viewModel by memoized { ContentsViewModel(localRepository) }

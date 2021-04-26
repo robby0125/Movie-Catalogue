@@ -3,10 +3,10 @@ package com.robby.moviecatalogue.ui.search
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.source.LocalRepository
+import com.robby.moviecatalogue.data.source.MovieRepository
 import com.robby.moviecatalogue.utils.ContentType
 
-class SearchViewModel(private val repo: LocalRepository) : ViewModel() {
+class SearchViewModel(private val repo: MovieRepository) : ViewModel() {
 
     private lateinit var query: String
     private lateinit var type: ContentType

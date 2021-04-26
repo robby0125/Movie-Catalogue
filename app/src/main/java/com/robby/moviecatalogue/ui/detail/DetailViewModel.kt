@@ -3,10 +3,10 @@ package com.robby.moviecatalogue.ui.detail
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.source.LocalRepository
+import com.robby.moviecatalogue.data.source.MovieRepository
 import kotlin.properties.Delegates
 
-class DetailViewModel(private val repo: LocalRepository) : ViewModel() {
+class DetailViewModel(private val repo: MovieRepository) : ViewModel() {
 
     private var contentId by Delegates.notNull<Int>()
     private var query = ""

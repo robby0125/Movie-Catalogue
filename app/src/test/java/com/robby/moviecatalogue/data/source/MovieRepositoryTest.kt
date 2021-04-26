@@ -11,7 +11,7 @@ import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class LocalRepositoryTest : Spek({
+class MovieRepositoryTest : Spek({
     beforeEachTest {
         ArchTaskExecutor.getInstance().setDelegate(object : TaskExecutor() {
             override fun executeOnDiskIO(runnable: Runnable) {
@@ -30,7 +30,7 @@ class LocalRepositoryTest : Spek({
 
     val remoteDataSource = mock(RemoteDataSource::class.java)
 
-    val localRepository by memoized { FakeLocalRepository(remoteDataSource) }
+    val localRepository by memoized { FakeMovieRepository(remoteDataSource) }
 
     val dummyMovieResponses = DataDummy.getDummyMovies()
     val dummyMovieId = dummyMovieResponses.first().id

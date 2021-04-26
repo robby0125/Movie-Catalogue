@@ -8,7 +8,7 @@ import com.nhaarman.mockitokotlin2.atLeastOnce
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.source.LocalRepository
+import com.robby.moviecatalogue.data.source.MovieRepository
 import com.robby.moviecatalogue.utils.ContentType
 import com.robby.moviecatalogue.utils.DataDummy
 import org.mockito.Mockito.`when`
@@ -34,7 +34,7 @@ class SearchViewModelTest : Spek({
 
     afterEachGroup { ArchTaskExecutor.getInstance().setDelegate(null) }
 
-    val localRepository = mock<LocalRepository>()
+    val localRepository = mock<MovieRepository>()
     val observer = mock<Observer<List<ContentEntity>>>()
 
     val viewModel by memoized { SearchViewModel(localRepository) }

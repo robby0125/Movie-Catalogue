@@ -9,19 +9,11 @@ import com.robby.moviecatalogue.data.model.response.TvShow
 import java.util.*
 import kotlin.collections.ArrayList
 
-class LocalRepository private constructor(private val remoteDataSource: RemoteDataSource) :
-    LocalDataSource {
+class FakeMovieRepository(private val remoteDataSource: RemoteDataSource) :
+    MovieDataSource {
 
     companion object {
         private const val BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500"
-
-        @Volatile
-        private var instance: LocalRepository? = null
-
-        fun getInstance(remoteDataSource: RemoteDataSource): LocalRepository =
-            instance ?: synchronized(this) {
-                instance ?: LocalRepository(remoteDataSource).apply { instance = this }
-            }
     }
 
     private var movieGenreList = ArrayList<GenresItem>()
