@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.robby.moviecatalogue.databinding.FragmentMovieListBinding
 import com.robby.moviecatalogue.ui.content.ContentsAdapter
 import com.robby.moviecatalogue.ui.content.ContentsViewModel
 import com.robby.moviecatalogue.utils.ContentType
+import com.robby.moviecatalogue.vo.Status
 import org.koin.android.ext.android.inject
 
 class MovieListFragment : Fragment() {
@@ -30,20 +32,28 @@ class MovieListFragment : Fragment() {
         val viewModel: ContentsViewModel by inject()
         val adapter = ContentsAdapter(ContentType.MOVIE)
 
-        binding.rvMovies.visibility = View.INVISIBLE
-        binding.noDataLayout.root.visibility = View.INVISIBLE
-        binding.progressBar.visibility = View.VISIBLE
+        viewModel.getMovieDiscover().observe(viewLifecycleOwner, { movies ->
+            if (movies != null) {
+                when (movies.status) {
+                    Status.LOADING -> {
+                        binding.rvMovies.visibility = View.INVISIBLE
+                        binding.noDataLayout.root.visibility = View.INVISIBLE
+                        binding.progressBar.visibility = View.VISIBLE
+                    }
 
-        viewModel.getMovieDiscover().observe(viewLifecycleOwner, {
-            binding.progressBar.visibility = View.GONE
+                    Status.SUCCESS -> {
+                        binding.progressBar.visibility = View.GONE
+                        binding.rvMovies.visibility = View.VISIBLE
+                        adapter.submitList(movies.data)
+                    }
 
-            if (it.isNotEmpty()) {
-                binding.rvMovies.visibility = View.VISIBLE
+                    Status.ERROR -> {
+                        binding.progressBar.visibility = View.GONE
+                        binding.noDataLayout.root.visibility = View.VISIBLE
 
-                adapter.setListContents(it)
-                adapter.notifyDataSetChanged()
-            } else {
-                binding.noDataLayout.root.visibility = View.VISIBLE
+                        Toast.makeText(context, movies.message, Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         })
 

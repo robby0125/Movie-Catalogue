@@ -1,8 +1,8 @@
 package com.robby.moviecatalogue.utils
 
-import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.model.response.Movie
-import com.robby.moviecatalogue.data.model.response.TvShow
+import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
+import com.robby.moviecatalogue.data.source.remote.response.Movie
+import com.robby.moviecatalogue.data.source.remote.response.TvShow
 
 object DataDummy {
 
@@ -157,6 +157,7 @@ object DataDummy {
             with(it) {
                 val movie = ContentEntity(
                     id,
+                    ContentType.MOVIE,
                     title,
                     "Dummy Genre",
                     releaseDate,
@@ -180,6 +181,7 @@ object DataDummy {
             with(it) {
                 val tv = ContentEntity(
                     id,
+                    ContentType.MOVIE,
                     name,
                     "Dummy Genre",
                     firstAirDate,

@@ -1,4 +1,4 @@
-package com.robby.moviecatalogue.data.model.response
+package com.robby.moviecatalogue.data.source.remote.response
 
 import com.google.gson.annotations.SerializedName
 

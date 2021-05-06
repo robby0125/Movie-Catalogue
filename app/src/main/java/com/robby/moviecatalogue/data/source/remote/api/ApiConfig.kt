@@ -1,4 +1,4 @@
-package com.robby.moviecatalogue.data.api
+package com.robby.moviecatalogue.data.source.remote.api
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

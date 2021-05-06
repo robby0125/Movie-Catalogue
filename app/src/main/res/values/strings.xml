@@ -7,5 +7,9 @@
     <string name="search">Search</string>
     <string name="original_language">Original Language</string>
     <string name="error_image">error image</string>
-    <string name="error_message">No data found!</string>
+    <string name="no_data_message">No Data!</string>
+    <string name="title_movie">Movies</string>
+    <string name="title_tv">TV Shows</string>
+    <string name="title_favorite">Favorites</string>
+    <string name="favorite">Favorite</string>
 </resources>

@@ -2,8 +2,9 @@ package com.robby.moviecatalogue.ui.search
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.source.MovieRepository
+import androidx.paging.PagedList
+import com.robby.moviecatalogue.data.MovieRepository
+import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
 import com.robby.moviecatalogue.utils.ContentType
 
 class SearchViewModel(private val repo: MovieRepository) : ViewModel() {
@@ -16,6 +17,6 @@ class SearchViewModel(private val repo: MovieRepository) : ViewModel() {
         this.type = type
     }
 
-    fun getSearchResult(): LiveData<List<ContentEntity>> =
+    fun getSearchResult(): LiveData<PagedList<ContentEntity>> =
         if (type == ContentType.MOVIE) repo.searchMovies(query) else repo.searchTvShows(query)
 }

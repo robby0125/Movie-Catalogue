@@ -1,31 +1,55 @@
 package com.robby.moviecatalogue.ui.detail
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
-import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.source.MovieRepository
-import kotlin.properties.Delegates
+import com.robby.moviecatalogue.data.MovieRepository
+import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
+import com.robby.moviecatalogue.utils.ContentType
 
 class DetailViewModel(private val repo: MovieRepository) : ViewModel() {
 
-    private var contentId by Delegates.notNull<Int>()
+    private val contentId = MutableLiveData<Int>()
+    private var contentType: ContentType? = null
     private var query = ""
 
     fun setSelectedContentID(contentId: Int) {
-        this.contentId = contentId
+        this.contentId.value = contentId
+    }
+
+    fun setContentType(contentType: ContentType) {
+        this.contentType = contentType
     }
 
     fun setQuery(query: String) {
         this.query = query
     }
 
-    fun getMovieDetail(): LiveData<ContentEntity> = repo.getMovieDetail(contentId)
+    var movieDetail: LiveData<ContentEntity> = Transformations.switchMap(contentId) {
+        if (query.isEmpty()) repo.getMovieDetail(it)
+        else repo.getMovieDetailWithQuery(it, query)
+    }
 
-    fun getTvDetail(): LiveData<ContentEntity> = repo.getTvDetail(contentId)
+    var tvShowDetail: LiveData<ContentEntity> = Transformations.switchMap(contentId) {
+        if (query.isEmpty()) repo.getTvDetail(it)
+        else repo.getTvDetailWithQuery(it, query)
+    }
 
-    fun getMovieDetailWithQuery(): LiveData<ContentEntity> =
-        repo.getMovieDetailWithQuery(contentId, query)
+    fun setFavorite(): Boolean {
+        val content =
+            if (contentType == ContentType.MOVIE) movieDetail.value else tvShowDetail.value
+        if (content != null) {
+            if (!repo.isContentAvailable(content.id)) {
+                repo.insertContent(content)
+            }
 
-    fun getTvDetailWithQuery(): LiveData<ContentEntity> =
-        repo.getTvDetailWithQuery(contentId, query)
+            val newState = !content.isFavorite
+            repo.setContentFavorite(content, newState)
+
+            return newState
+        }
+
+        return false
+    }
 }

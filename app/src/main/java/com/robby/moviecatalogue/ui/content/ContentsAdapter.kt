@@ -3,26 +3,37 @@ package com.robby.moviecatalogue.ui.content
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.robby.moviecatalogue.R
-import com.robby.moviecatalogue.data.model.local.ContentEntity
+import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
 import com.robby.moviecatalogue.databinding.ItemCardLayoutBinding
 import com.robby.moviecatalogue.ui.detail.DetailActivity
 import com.robby.moviecatalogue.utils.ContentType
 
 class ContentsAdapter(private val contentType: ContentType) :
-    RecyclerView.Adapter<ContentsAdapter.ContentViewHolder>() {
+    PagedListAdapter<ContentEntity, ContentsAdapter.ContentViewHolder>(
+        DIFF_CALLBACK
+    ) {
 
-    private val listContents = ArrayList<ContentEntity>()
-    private var query = "";
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ContentEntity>() {
+            override fun areItemsTheSame(oldItem: ContentEntity, newItem: ContentEntity): Boolean =
+                oldItem.id == newItem.id
 
-    fun setListContents(contents: List<ContentEntity>) {
-        listContents.clear()
-        listContents.addAll(contents)
+            override fun areContentsTheSame(
+                oldItem: ContentEntity,
+                newItem: ContentEntity
+            ): Boolean = oldItem == newItem
+
+        }
     }
+
+    private var query = ""
 
     fun setQuery(query: String) {
         this.query = query
@@ -35,10 +46,11 @@ class ContentsAdapter(private val contentType: ContentType) :
     }
 
     override fun onBindViewHolder(holder: ContentViewHolder, position: Int) {
-        holder.bind(listContents[position])
+        val content = getItem(position)
+        if (content != null) {
+            holder.bind(content)
+        }
     }
-
-    override fun getItemCount(): Int = listContents.size
 
     inner class ContentViewHolder(private val binding: ItemCardLayoutBinding) :
         RecyclerView.ViewHolder(binding.root) {

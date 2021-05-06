@@ -4,10 +4,12 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.arch.core.executor.TaskExecutor
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.paging.PagedList
+import com.nhaarman.mockitokotlin2.atLeastOnce
 import com.nhaarman.mockitokotlin2.mock
-import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.source.MovieRepository
-import com.robby.moviecatalogue.utils.DataDummy
+import com.robby.moviecatalogue.data.MovieRepository
+import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
+import com.robby.moviecatalogue.vo.Resource
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.spekframework.spek2.Spek
@@ -32,22 +34,24 @@ class ContentsViewModelTest : Spek({
 
     afterEachGroup { ArchTaskExecutor.getInstance().setDelegate(null) }
 
-    val localRepository = mock<MovieRepository>()
-    val observer = mock<Observer<List<ContentEntity>>>()
+    val movieRepository = mock<MovieRepository>()
+    val observer = mock<Observer<Resource<PagedList<ContentEntity>>>>()
+    val pagedList = mock<PagedList<ContentEntity>>()
 
-    val viewModel by memoized { ContentsViewModel(localRepository) }
+    val viewModel by memoized { ContentsViewModel(movieRepository) }
 
     describe("Get dummy movie data") {
         it("data is not null and total data is same with dummy items") {
-            val dummyMovies = DataDummy.getDummyMoviesAsContent()
-            val movies = MutableLiveData<List<ContentEntity>>()
+            val dummyMovies = Resource.success(pagedList)
+            `when`(dummyMovies.data?.size).thenReturn(5)
+            val movies = MutableLiveData<Resource<PagedList<ContentEntity>>>()
             movies.value = dummyMovies
 
-            `when`(localRepository.getMovieDiscover()).thenReturn(movies)
+            `when`(movieRepository.getMovieDiscover()).thenReturn(movies)
             val movieDiscover = viewModel.getMovieDiscover().value
-            verify(localRepository).getMovieDiscover()
+            verify(movieRepository).getMovieDiscover()
             assertNotNull(movieDiscover)
-            assertEquals(dummyMovies.size, movieDiscover.size)
+            assertEquals(dummyMovies.data?.size, movieDiscover.data?.size)
 
             viewModel.getMovieDiscover().observeForever(observer)
             verify(observer).onChanged(dummyMovies)
@@ -56,18 +60,19 @@ class ContentsViewModelTest : Spek({
 
     describe("Get dummy tv show data") {
         it("data is not null and total data is same with dummy items") {
-            val dummyTvShows = DataDummy.getDummyTvShowsAsContent()
-            val tvShows = MutableLiveData<List<ContentEntity>>()
+            val dummyTvShows = Resource.success(pagedList)
+            `when`(dummyTvShows.data?.size).thenReturn(5)
+            val tvShows = MutableLiveData<Resource<PagedList<ContentEntity>>>()
             tvShows.value = dummyTvShows
 
-            `when`(localRepository.getTvDiscover()).thenReturn(tvShows)
+            `when`(movieRepository.getTvDiscover()).thenReturn(tvShows)
             val tvShowDiscover = viewModel.getTvDiscover().value
-            verify(localRepository).getTvDiscover()
+            verify(movieRepository).getTvDiscover()
             assertNotNull(tvShowDiscover)
-            assertEquals(dummyTvShows.size, tvShowDiscover.size)
+            assertEquals(dummyTvShows.data?.size, tvShowDiscover.data?.size)
 
             viewModel.getTvDiscover().observeForever(observer)
-            verify(observer).onChanged(dummyTvShows)
+            verify(observer, atLeastOnce()).onChanged(dummyTvShows)
         }
     }
 })

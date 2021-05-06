@@ -47,9 +47,8 @@ class SearchActivity : AppCompatActivity() {
                 if (it.isNotEmpty()) {
                     binding.rvSearchResult.visibility = View.VISIBLE
 
-                    adapter.setListContents(it)
+                    adapter.submitList(it)
                     adapter.setQuery(query)
-                    adapter.notifyDataSetChanged()
                 } else {
                     binding.noDataLayout.root.visibility = View.VISIBLE
                 }

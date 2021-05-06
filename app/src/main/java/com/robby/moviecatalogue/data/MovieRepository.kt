@@ -1,4 +1,4 @@
-package com.robby.moviecatalogue.data.source
+package com.robby.moviecatalogue.data
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -6,9 +6,6 @@ import androidx.lifecycle.Transformations
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import androidx.paging.toLiveData
-import com.robby.moviecatalogue.data.ListDataSource
-import com.robby.moviecatalogue.data.MovieDataSource
-import com.robby.moviecatalogue.data.NetworkBoundResource
 import com.robby.moviecatalogue.data.source.local.LocalDataSource
 import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
 import com.robby.moviecatalogue.data.source.remote.RemoteDataSource
@@ -22,7 +19,7 @@ import com.robby.moviecatalogue.vo.Resource
 import java.util.*
 import kotlin.collections.ArrayList
 
-class FakeMovieRepository(
+class MovieRepository private constructor(
     private val remoteDataSource: RemoteDataSource,
     private val localDataSource: LocalDataSource,
     private val appExecutors: AppExecutors
@@ -30,6 +27,20 @@ class FakeMovieRepository(
 
     companion object {
         private const val BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500"
+
+        @Volatile
+        private var instance: MovieRepository? = null
+
+        fun getInstance(
+            remoteDataSource: RemoteDataSource,
+            localDataSource: LocalDataSource,
+            appExecutors: AppExecutors
+        ): MovieRepository =
+            instance ?: synchronized(this) {
+                instance ?: MovieRepository(remoteDataSource, localDataSource, appExecutors).apply {
+                    instance = this
+                }
+            }
     }
 
     private var movieGenreList = ArrayList<GenresItem>()

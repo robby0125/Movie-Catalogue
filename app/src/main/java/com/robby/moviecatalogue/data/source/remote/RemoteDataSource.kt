@@ -1,8 +1,11 @@
-package com.robby.moviecatalogue.data.source
+package com.robby.moviecatalogue.data.source.remote
 
 import android.util.Log
-import com.robby.moviecatalogue.data.api.ApiConfig
-import com.robby.moviecatalogue.data.model.response.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.robby.moviecatalogue.data.source.remote.api.ApiConfig
+import com.robby.moviecatalogue.data.source.remote.api.ApiResponse
+import com.robby.moviecatalogue.data.source.remote.response.*
 import com.robby.moviecatalogue.utils.EspressoIdlingResource
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,9 +24,9 @@ class RemoteDataSource {
         }
     }
 
-    fun getMovieDiscover(callback: LoadMovieDiscoverCallback) {
+    fun getMovieDiscover(): LiveData<ApiResponse<List<Movie>>> {
         EspressoIdlingResource.increment()
-
+        val movieResults = MutableLiveData<ApiResponse<List<Movie>>>()
         val client = ApiConfig.getApiService().getMovieDiscover()
         client.enqueue(object : Callback<MoviesResponse> {
             override fun onResponse(
@@ -31,24 +34,26 @@ class RemoteDataSource {
                 response: Response<MoviesResponse>
             ) {
                 if (response.isSuccessful) {
-                    response.body()?.let { callback.onMovieDiscoverLoaded(it.results) }
+                    response.body()?.let { movieResults.value = ApiResponse.success(it.results) }
                     EspressoIdlingResource.decrement()
                 } else {
+                    movieResults.value = ApiResponse.empty(response.message(), emptyList())
                     EspressoIdlingResource.decrement()
-                    Log.e(TAG, "onResponse: ${response.message()}")
                 }
             }
 
             override fun onFailure(call: Call<MoviesResponse>, t: Throwable) {
+                movieResults.value =
+                    ApiResponse.error(t.message ?: "Failed to Load Data!", emptyList())
                 EspressoIdlingResource.decrement()
-                Log.e(TAG, "onFailure: ${t.message}")
             }
         })
+        return movieResults
     }
 
-    fun getTvDiscover(callback: LoadTvDiscoverCallback) {
+    fun getTvDiscover(): LiveData<ApiResponse<List<TvShow>>> {
         EspressoIdlingResource.increment()
-
+        val tvResults = MutableLiveData<ApiResponse<List<TvShow>>>()
         val client = ApiConfig.getApiService().getTvDiscover()
         client.enqueue(object : Callback<TvShowsResponse> {
             override fun onResponse(
@@ -56,19 +61,21 @@ class RemoteDataSource {
                 response: Response<TvShowsResponse>
             ) {
                 if (response.isSuccessful) {
-                    response.body()?.let { callback.onTvDiscoverLoaded(it.results) }
+                    response.body()?.let { tvResults.value = ApiResponse.success(it.results) }
                     EspressoIdlingResource.decrement()
                 } else {
+                    tvResults.value = ApiResponse.empty(response.message(), emptyList())
                     EspressoIdlingResource.decrement()
-                    Log.e(TAG, "onResponse: ${response.message()}")
                 }
             }
 
             override fun onFailure(call: Call<TvShowsResponse>, t: Throwable) {
+                tvResults.value =
+                    ApiResponse.error(t.message ?: "Failed to Load Data!", emptyList())
                 EspressoIdlingResource.decrement()
-                Log.e(TAG, "onFailure: ${t.message}")
             }
         })
+        return tvResults
     }
 
     fun getGenreList(callback: LoadGenreListCallback) {
@@ -122,14 +129,14 @@ class RemoteDataSource {
                     response.body()?.let { callback.onMoviesFound(it.results) }
                     EspressoIdlingResource.decrement()
                 } else {
-                    EspressoIdlingResource.decrement()
                     Log.e(TAG, "onResponse: ${response.message()}")
+                    EspressoIdlingResource.decrement()
                 }
             }
 
             override fun onFailure(call: Call<MoviesResponse>, t: Throwable) {
-                EspressoIdlingResource.decrement()
                 Log.e(TAG, "onFailure: ${t.message}")
+                EspressoIdlingResource.decrement()
             }
         })
     }
@@ -147,29 +154,21 @@ class RemoteDataSource {
                     response.body()?.let { callback.onTvShowsFound(it.results) }
                     EspressoIdlingResource.decrement()
                 } else {
-                    EspressoIdlingResource.decrement()
                     Log.e(TAG, "onResponse: ${response.message()}")
+                    EspressoIdlingResource.decrement()
                 }
             }
 
             override fun onFailure(call: Call<TvShowsResponse>, t: Throwable) {
-                EspressoIdlingResource.decrement()
                 Log.e(TAG, "onFailure: ${t.message}")
+                EspressoIdlingResource.decrement()
             }
         })
     }
 
-    interface LoadMovieDiscoverCallback {
-        fun onMovieDiscoverLoaded(listMovieResponses: List<Movie>)
-    }
-
-    interface LoadTvDiscoverCallback {
-        fun onTvDiscoverLoaded(listTvShowResponses: List<TvShow>)
-    }
-
     interface LoadGenreListCallback {
-        fun onMovieGenreListLoaded(listGenreReponses: List<GenresItem>)
-        fun onTvShowGenreListLoaded(listGenreReponses: List<GenresItem>)
+        fun onMovieGenreListLoaded(listGenreResponses: List<GenresItem>)
+        fun onTvShowGenreListLoaded(listGenreResponses: List<GenresItem>)
     }
 
     interface SearchMoviesCallback {

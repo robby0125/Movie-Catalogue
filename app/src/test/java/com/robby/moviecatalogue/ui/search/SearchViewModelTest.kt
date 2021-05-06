@@ -4,14 +4,16 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.arch.core.executor.TaskExecutor
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.paging.PagedList
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.atLeastOnce
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
-import com.robby.moviecatalogue.data.model.local.ContentEntity
-import com.robby.moviecatalogue.data.source.MovieRepository
+import com.robby.moviecatalogue.data.MovieRepository
+import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
 import com.robby.moviecatalogue.utils.ContentType
-import com.robby.moviecatalogue.utils.DataDummy
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.anyString
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertEquals
@@ -36,21 +38,21 @@ class SearchViewModelTest : Spek({
 
     val localRepository = mock<MovieRepository>()
     val observer = mock<Observer<List<ContentEntity>>>()
+    val pagedList = mock<PagedList<ContentEntity>>()
 
     val viewModel by memoized { SearchViewModel(localRepository) }
 
     describe("Search movies and tv shows") {
         it("movies result must be not null and total item found is 1 item") {
-            val dummyMovies = DataDummy.getDummyMoviesAsContent()
-            val dummyMovieQuery = dummyMovies.first().title.split(" ").first()
+            `when`(pagedList.size).thenReturn(1)
 
-            val movieResult = MutableLiveData<List<ContentEntity>>()
-            movieResult.value = dummyMovies.filter { s -> s.title.contains(dummyMovieQuery, true) }
+            val movieResult = MutableLiveData<PagedList<ContentEntity>>()
+            movieResult.value = pagedList
 
-            `when`(localRepository.searchMovies(dummyMovieQuery)).thenReturn(movieResult)
-            viewModel.setQueryAndType(dummyMovieQuery, ContentType.MOVIE)
+            `when`(localRepository.searchMovies(anyString())).thenReturn(movieResult)
+            viewModel.setQueryAndType(anyString(), ContentType.MOVIE)
             val movies = viewModel.getSearchResult().value
-            verify(localRepository).searchMovies(dummyMovieQuery)
+            verify(localRepository).searchMovies(any())
             assertNotNull(movies)
             assertEquals(1, movies.size)
 
@@ -59,17 +61,15 @@ class SearchViewModelTest : Spek({
         }
 
         it("tv shows result must be not null and total item found is 1 item") {
-            val dummyTvShows = DataDummy.getDummyTvShowsAsContent()
-            val dummyTvShowQuery = dummyTvShows[1].title.split(" ").first()
+            `when`(pagedList.size).thenReturn(1)
 
-            val tvShowResult = MutableLiveData<List<ContentEntity>>()
-            tvShowResult.value =
-                dummyTvShows.filter { s -> s.title.contains(dummyTvShowQuery, true) }
+            val tvShowResult = MutableLiveData<PagedList<ContentEntity>>()
+            tvShowResult.value = pagedList
 
-            `when`(localRepository.searchTvShows(dummyTvShowQuery)).thenReturn(tvShowResult)
-            viewModel.setQueryAndType(dummyTvShowQuery, ContentType.TV)
+            `when`(localRepository.searchTvShows(anyString())).thenReturn(tvShowResult)
+            viewModel.setQueryAndType(anyString(), ContentType.TV)
             val tvShows = viewModel.getSearchResult().value
-            verify(localRepository).searchTvShows(dummyTvShowQuery)
+            verify(localRepository).searchTvShows(any())
             assertNotNull(tvShows)
             assertEquals(1, tvShows.size)
 

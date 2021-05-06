@@ -5,6 +5,7 @@ import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -50,9 +51,26 @@ class HomeActivityTest {
     }
 
     @Test
+    fun addFavoriteMovie() {
+        onView(withId(R.id.rv_movies)).check(matches(isDisplayed()))
+        onView(withId(R.id.rv_movies)).perform(
+            RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click())
+        )
+
+        onView(withId(R.id.action_favorite)).check(matches(isDisplayed()))
+        onView(withId(R.id.action_favorite)).perform(click())
+
+        pressBack()
+
+        onView(withId(R.id.nav_view)).check(matches(isDisplayed()))
+        onView(withId(R.id.navigation_favorite)).perform(click())
+        onView(withId(R.id.rv_movies)).check(matches(isDisplayed()))
+    }
+
+    @Test
     fun loadTvShows() {
-        onView(withId(R.id.tabs)).check(matches(isDisplayed()))
-        onView(withText(R.string.tvshows)).perform(click())
+        onView(withId(R.id.nav_view)).check(matches(isDisplayed()))
+        onView(withId(R.id.navigation_tv)).perform(click())
 
         onView(withId(R.id.rv_tv_shows)).check(matches(isDisplayed()))
         onView(withId(R.id.rv_tv_shows)).perform(
@@ -64,8 +82,8 @@ class HomeActivityTest {
 
     @Test
     fun loadDetailTvShow() {
-        onView(withId(R.id.tabs)).check(matches(isDisplayed()))
-        onView(withText(R.string.tvshows)).perform(click())
+        onView(withId(R.id.nav_view)).check(matches(isDisplayed()))
+        onView(withId(R.id.navigation_tv)).perform(click())
 
         onView(withId(R.id.rv_tv_shows)).check(matches(isDisplayed()))
         onView(withId(R.id.rv_tv_shows)).perform(
@@ -73,6 +91,28 @@ class HomeActivityTest {
         )
 
         onView(withId(R.id.tv_title)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun addFavoriteTvShow() {
+        onView(withId(R.id.nav_view)).check(matches(isDisplayed()))
+        onView(withId(R.id.navigation_tv)).perform(click())
+
+        onView(withId(R.id.rv_tv_shows)).check(matches(isDisplayed()))
+        onView(withId(R.id.rv_tv_shows)).perform(
+            RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click())
+        )
+
+        onView(withId(R.id.action_favorite)).check(matches(isDisplayed()))
+        onView(withId(R.id.action_favorite)).perform(click())
+
+        pressBack()
+
+        onView(withId(R.id.nav_view)).check(matches(isDisplayed()))
+        onView(withId(R.id.navigation_favorite)).perform(click())
+        onView(withId(R.id.tabs)).check(matches(isDisplayed()))
+        onView(withText(R.string.tvshows)).perform(click())
+        onView(withId(R.id.rv_tv_shows)).check(matches(isDisplayed()))
     }
 
     @Test
@@ -98,13 +138,13 @@ class HomeActivityTest {
 
     @Test
     fun searchTvShow() {
-        onView(withId(R.id.tabs)).check(matches(isDisplayed()))
-        onView(withText(R.string.tvshows)).perform(click())
+        onView(withId(R.id.nav_view)).check(matches(isDisplayed()))
+        onView(withId(R.id.navigation_tv)).perform(click())
 
         onView(withId(R.id.search)).check(matches(isDisplayed()))
         onView(withId(R.id.search)).perform(click())
         onView(isAssignableFrom(EditText::class.java)).perform(
-            typeText("on titan"),
+            typeText("attack on titan"),
             pressKey(KeyEvent.KEYCODE_ENTER)
         )
 

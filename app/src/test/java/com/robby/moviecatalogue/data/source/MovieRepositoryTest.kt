@@ -2,15 +2,25 @@ package com.robby.moviecatalogue.data.source
 
 import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.arch.core.executor.TaskExecutor
+import androidx.lifecycle.MutableLiveData
+import androidx.paging.DataSource
 import com.nhaarman.mockitokotlin2.*
+import com.robby.moviecatalogue.data.source.local.LocalDataSource
+import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
+import com.robby.moviecatalogue.data.source.remote.RemoteDataSource
+import com.robby.moviecatalogue.utils.AppExecutors
 import com.robby.moviecatalogue.utils.DataDummy
 import com.robby.moviecatalogue.utils.LiveDataTestUtil
+import com.robby.moviecatalogue.utils.PagedListUtil
+import com.robby.moviecatalogue.vo.Resource
+import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+@Suppress("UNCHECKED_CAST")
 class MovieRepositoryTest : Spek({
     beforeEachTest {
         ArchTaskExecutor.getInstance().setDelegate(object : TaskExecutor() {
@@ -28,9 +38,11 @@ class MovieRepositoryTest : Spek({
 
     afterEachGroup { ArchTaskExecutor.getInstance().setDelegate(null) }
 
-    val remoteDataSource = mock(RemoteDataSource::class.java)
+    val remote = mock(RemoteDataSource::class.java)
+    val local = mock(LocalDataSource::class.java)
+    val appExecutors = mock(AppExecutors::class.java)
 
-    val localRepository by memoized { FakeMovieRepository(remoteDataSource) }
+    val movieRepository by memoized { FakeMovieRepository(remote, local, appExecutors) }
 
     val dummyMovieResponses = DataDummy.getDummyMovies()
     val dummyMovieId = dummyMovieResponses.first().id
@@ -47,33 +59,31 @@ class MovieRepositoryTest : Spek({
     }
 
     group("Get content discover") {
+        val dataSourceFactory =
+            mock(DataSource.Factory::class.java) as DataSource.Factory<Int, ContentEntity>
         describe("Get all movies test") {
             it("retrieve all movies then check if results is not null and results size equals with dummy") {
-                doAnswer { invocation ->
-                    (invocation.arguments[0] as RemoteDataSource.LoadMovieDiscoverCallback).onMovieDiscoverLoaded(
-                        dummyMovieResponses
-                    )
-                    null
-                }.`when`(remoteDataSource).getMovieDiscover(any())
-                val movieList = LiveDataTestUtil.getValue(localRepository.getMovieDiscover())
-                verify(remoteDataSource).getMovieDiscover(any())
+                `when`(local.getMovieDiscover()).thenReturn(dataSourceFactory)
+                movieRepository.getMovieDiscover()
+
+                val movieList =
+                    Resource.success(PagedListUtil.mockPagedList(DataDummy.getDummyMoviesAsContent()))
+                verify(local).getMovieDiscover()
                 assertNotNull(movieList)
-                assertEquals(dummyMovieResponses.size, movieList.size)
+                assertEquals(dummyMovieResponses.size, movieList.data?.size)
             }
         }
 
         describe("Get all tv shows test") {
             it("retrieve all tv shows then check if results is not null and results size equals with dummy") {
-                doAnswer { invocation ->
-                    (invocation.arguments[0] as RemoteDataSource.LoadTvDiscoverCallback).onTvDiscoverLoaded(
-                        dummyTvShowResponses
-                    )
-                    null
-                }.`when`(remoteDataSource).getTvDiscover(any())
-                val tvShowList = LiveDataTestUtil.getValue(localRepository.getTvDiscover())
-                verify(remoteDataSource).getTvDiscover(any())
+                `when`(local.getTvDiscover()).thenReturn(dataSourceFactory)
+                movieRepository.getTvDiscover()
+
+                val tvShowList =
+                    Resource.success(PagedListUtil.mockPagedList(DataDummy.getDummyTvShowsAsContent()))
+                verify(local).getMovieDiscover()
                 assertNotNull(tvShowList)
-                assertEquals(dummyTvShowResponses.size, tvShowList.size)
+                assertEquals(dummyMovieResponses.size, tvShowList.data?.size)
             }
         }
     }
@@ -81,14 +91,12 @@ class MovieRepositoryTest : Spek({
     group("Get content detail") {
         describe("Get movie detail at first index") {
             it("result must be not null and check if movie title is the same with dummy") {
-                doAnswer { invocation ->
-                    (invocation.arguments[0] as RemoteDataSource.LoadMovieDiscoverCallback).onMovieDiscoverLoaded(
-                        dummyMovieResponses
-                    )
-                    null
-                }.`when`(remoteDataSource).getMovieDiscover(any())
-                val movie = LiveDataTestUtil.getValue(localRepository.getMovieDetail(dummyMovieId))
-                verify(remoteDataSource, atLeastOnce()).getMovieDiscover(any())
+                val dummyMovie = MutableLiveData<ContentEntity>()
+                dummyMovie.value = DataDummy.getDummyMoviesAsContent().first()
+                `when`(local.getMovieDetail(any())).thenReturn(dummyMovie)
+
+                val movie = LiveDataTestUtil.getValue(movieRepository.getMovieDetail(dummyMovieId))
+                verify(local, atLeastOnce()).getMovieDiscover()
                 assertNotNull(movie)
                 assertEquals(dummyMovieResponses.first().title, movie.title)
             }
@@ -101,14 +109,14 @@ class MovieRepositoryTest : Spek({
                         dummySearchMovieResult
                     )
                     null
-                }.`when`(remoteDataSource).searchMovies(any(), eq(dummyMovieQuery))
+                }.`when`(remote).searchMovies(any(), eq(dummyMovieQuery))
                 val movie = LiveDataTestUtil.getValue(
-                    localRepository.getMovieDetailWithQuery(
+                    movieRepository.getMovieDetailWithQuery(
                         dummyMovieId,
                         dummyMovieQuery
                     )
                 )
-                verify(remoteDataSource).searchMovies(any(), eq(dummyMovieQuery))
+                verify(remote).searchMovies(any(), eq(dummyMovieQuery))
                 assertNotNull(movie)
                 assertEquals(dummySearchMovieResult.first().title, movie.title)
             }
@@ -116,14 +124,12 @@ class MovieRepositoryTest : Spek({
 
         describe("Get tv detail at first index") {
             it("result must be not null and check if tv title is the same with dummy") {
-                doAnswer { invocation ->
-                    (invocation.arguments[0] as RemoteDataSource.LoadTvDiscoverCallback).onTvDiscoverLoaded(
-                        dummyTvShowResponses
-                    )
-                    null
-                }.`when`(remoteDataSource).getTvDiscover(any())
-                val tv = LiveDataTestUtil.getValue(localRepository.getTvDetail(dummyTvId))
-                verify(remoteDataSource, atLeastOnce()).getMovieDiscover(any())
+                val dummyTvShow = MutableLiveData<ContentEntity>()
+                dummyTvShow.value = DataDummy.getDummyTvShowsAsContent().first()
+                `when`(local.getTvDetail(any())).thenReturn(dummyTvShow)
+
+                val tv = LiveDataTestUtil.getValue(movieRepository.getTvDetail(dummyTvId))
+                verify(local, atLeastOnce()).getMovieDiscover()
                 assertNotNull(tv)
                 assertEquals(dummyTvShowResponses.first().name, tv.title)
             }
@@ -136,14 +142,14 @@ class MovieRepositoryTest : Spek({
                         dummySearchTvShowResult
                     )
                     null
-                }.`when`(remoteDataSource).searchTvShows(any(), eq(dummyTvQuery))
+                }.`when`(remote).searchTvShows(any(), eq(dummyTvQuery))
                 val tv = LiveDataTestUtil.getValue(
-                    localRepository.getTvDetailWithQuery(
+                    movieRepository.getTvDetailWithQuery(
                         dummyTvId,
                         dummyTvQuery
                     )
                 )
-                verify(remoteDataSource).searchTvShows(any(), eq(dummyTvQuery))
+                verify(remote).searchTvShows(any(), eq(dummyTvQuery))
                 assertNotNull(tv)
                 assertEquals(dummySearchTvShowResult.first().name, tv.title)
             }
@@ -158,10 +164,10 @@ class MovieRepositoryTest : Spek({
                         dummySearchMovieResult
                     )
                     null
-                }.`when`(remoteDataSource).searchMovies(any(), eq(dummyMovieQuery))
+                }.`when`(remote).searchMovies(any(), eq(dummyMovieQuery))
                 val movieResult =
-                    LiveDataTestUtil.getValue(localRepository.searchMovies(dummyMovieQuery))
-                verify(remoteDataSource, atLeastOnce()).searchMovies(any(), eq(dummyMovieQuery))
+                    LiveDataTestUtil.getValue(movieRepository.searchMovies(dummyMovieQuery))
+                verify(remote, atLeastOnce()).searchMovies(any(), eq(dummyMovieQuery))
                 assertNotNull(movieResult)
                 assertEquals(1, movieResult.size)
             }
@@ -174,10 +180,10 @@ class MovieRepositoryTest : Spek({
                         dummySearchTvShowResult
                     )
                     null
-                }.`when`(remoteDataSource).searchTvShows(any(), eq(dummyTvQuery))
+                }.`when`(remote).searchTvShows(any(), eq(dummyTvQuery))
                 val tvResult =
-                    LiveDataTestUtil.getValue(localRepository.searchTvShows(dummyTvQuery))
-                verify(remoteDataSource, atLeastOnce()).searchTvShows(any(), eq(dummyTvQuery))
+                    LiveDataTestUtil.getValue(movieRepository.searchTvShows(dummyTvQuery))
+                verify(remote, atLeastOnce()).searchTvShows(any(), eq(dummyTvQuery))
                 assertNotNull(tvResult)
                 assertEquals(2, tvResult.size)
             }

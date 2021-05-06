@@ -1,14 +1,18 @@
 package com.robby.moviecatalogue.ui.detail
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.robby.moviecatalogue.R
-import com.robby.moviecatalogue.data.model.local.ContentEntity
+import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
 import com.robby.moviecatalogue.databinding.ActivityDetailBinding
 import com.robby.moviecatalogue.utils.ContentType
 import org.koin.android.ext.android.inject
@@ -22,6 +26,10 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityDetailBinding
+    private lateinit var detailLiveData: LiveData<ContentEntity>
+
+    private val viewModel: DetailViewModel by inject()
+    private var menu: Menu? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +42,7 @@ class DetailActivity : AppCompatActivity() {
         val contentId = intent.getIntExtra(EXTRA_CONTENT_ID, 0)
         val contentType = intent.getSerializableExtra(EXTRA_TYPE) as ContentType
 
-        val viewModel: DetailViewModel by inject()
+        viewModel.setContentType(contentType)
         viewModel.setSelectedContentID(contentId)
 
         contentQuery?.let { viewModel.setQuery(it) }
@@ -42,23 +50,37 @@ class DetailActivity : AppCompatActivity() {
         binding.progressBar.visibility = View.VISIBLE
         binding.detailContent.visibility = View.INVISIBLE
 
-        val getDetail =
-            if (contentQuery != null && contentQuery.isNotEmpty()) {
-                if (contentType == ContentType.MOVIE) viewModel.getMovieDetailWithQuery() else viewModel.getTvDetailWithQuery()
-            } else {
-                if (contentType == ContentType.MOVIE) viewModel.getMovieDetail() else viewModel.getTvDetail()
-            }
+        detailLiveData =
+            if (contentType == ContentType.MOVIE) viewModel.movieDetail else viewModel.tvShowDetail
 
-        getDetail.observe(this, {
-            binding.progressBar.visibility = View.GONE
-            binding.detailContent.visibility = View.VISIBLE
-            populateContent(it)
+        detailLiveData.observe(this, {
+            if (it != null) {
+                binding.progressBar.visibility = View.GONE
+                binding.detailContent.visibility = View.VISIBLE
+                populateContent(it)
+            }
         })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.detail_menu, menu)
+        this.menu = menu
+        detailLiveData.observe(this, {
+            setFavoriteState(it.isFavorite)
+        })
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_favorite) {
+            setFavoriteState(viewModel.setFavorite())
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun populateContent(contentEntity: ContentEntity) {
         with(binding) {
-
             tvTitle.text = contentEntity.title
             tvGenre.text = contentEntity.genre
             tvRate.text = contentEntity.voteAverage.toString()
@@ -84,5 +106,15 @@ class DetailActivity : AppCompatActivity() {
                 .error(R.drawable.ic_error)
                 .into(imgBackdrop)
         }
+    }
+
+    private fun setFavoriteState(state: Boolean) {
+        if (menu == null) return
+
+        val menuItem = menu?.findItem(R.id.action_favorite)
+        menuItem?.icon = ContextCompat.getDrawable(
+            this,
+            if (state) R.drawable.ic_favorite else R.drawable.ic_favorite_border
+        )
     }
 }

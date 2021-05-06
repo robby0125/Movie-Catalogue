@@ -1,9 +1,9 @@
-package com.robby.moviecatalogue.data.api
+package com.robby.moviecatalogue.data.source.remote.api
 
 import com.robby.moviecatalogue.BuildConfig
-import com.robby.moviecatalogue.data.model.response.GenreListResponse
-import com.robby.moviecatalogue.data.model.response.MoviesResponse
-import com.robby.moviecatalogue.data.model.response.TvShowsResponse
+import com.robby.moviecatalogue.data.source.remote.response.GenreListResponse
+import com.robby.moviecatalogue.data.source.remote.response.MoviesResponse
+import com.robby.moviecatalogue.data.source.remote.response.TvShowsResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
