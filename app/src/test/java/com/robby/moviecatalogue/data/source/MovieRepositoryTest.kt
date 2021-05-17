@@ -44,6 +44,7 @@ class MovieRepositoryTest : Spek({
 
     val movieRepository by memoized { FakeMovieRepository(remote, local, appExecutors) }
 
+    val dummyMovies = DataDummy.getDummyMoviesAsContent()
     val dummyMovieResponses = DataDummy.getDummyMovies()
     val dummyMovieId = dummyMovieResponses.first().id
     val dummyMovieQuery = dummyMovieResponses.first().title.split(" ").first()
@@ -51,6 +52,7 @@ class MovieRepositoryTest : Spek({
         s.title.contains(dummyMovieQuery, true)
     }
 
+    val dummyTvShows = DataDummy.getDummyTvShowsAsContent()
     val dummyTvShowResponses = DataDummy.getDummyTvShows()
     val dummyTvId = dummyTvShowResponses.first().id
     val dummyTvQuery = dummyTvShowResponses.first().name.split(" ").first()
@@ -58,16 +60,17 @@ class MovieRepositoryTest : Spek({
         s.name.contains(dummyTvQuery, true)
     }
 
+    val dataSourceFactory =
+        mock(DataSource.Factory::class.java) as DataSource.Factory<Int, ContentEntity>
+
     group("Get content discover") {
-        val dataSourceFactory =
-            mock(DataSource.Factory::class.java) as DataSource.Factory<Int, ContentEntity>
         describe("Get all movies test") {
             it("retrieve all movies then check if results is not null and results size equals with dummy") {
                 `when`(local.getMovieDiscover()).thenReturn(dataSourceFactory)
                 movieRepository.getMovieDiscover()
 
                 val movieList =
-                    Resource.success(PagedListUtil.mockPagedList(DataDummy.getDummyMoviesAsContent()))
+                    Resource.success(PagedListUtil.mockPagedList(dummyMovies))
                 verify(local).getMovieDiscover()
                 assertNotNull(movieList)
                 assertEquals(dummyMovieResponses.size, movieList.data?.size)
@@ -80,7 +83,7 @@ class MovieRepositoryTest : Spek({
                 movieRepository.getTvDiscover()
 
                 val tvShowList =
-                    Resource.success(PagedListUtil.mockPagedList(DataDummy.getDummyTvShowsAsContent()))
+                    Resource.success(PagedListUtil.mockPagedList(dummyTvShows))
                 verify(local).getMovieDiscover()
                 assertNotNull(tvShowList)
                 assertEquals(dummyMovieResponses.size, tvShowList.data?.size)
@@ -92,7 +95,7 @@ class MovieRepositoryTest : Spek({
         describe("Get movie detail at first index") {
             it("result must be not null and check if movie title is the same with dummy") {
                 val dummyMovie = MutableLiveData<ContentEntity>()
-                dummyMovie.value = DataDummy.getDummyMoviesAsContent().first()
+                dummyMovie.value = dummyMovies.first()
                 `when`(local.getMovieDetail(any())).thenReturn(dummyMovie)
 
                 val movie = LiveDataTestUtil.getValue(movieRepository.getMovieDetail(dummyMovieId))
@@ -125,7 +128,7 @@ class MovieRepositoryTest : Spek({
         describe("Get tv detail at first index") {
             it("result must be not null and check if tv title is the same with dummy") {
                 val dummyTvShow = MutableLiveData<ContentEntity>()
-                dummyTvShow.value = DataDummy.getDummyTvShowsAsContent().first()
+                dummyTvShow.value = dummyTvShows.first()
                 `when`(local.getTvDetail(any())).thenReturn(dummyTvShow)
 
                 val tv = LiveDataTestUtil.getValue(movieRepository.getTvDetail(dummyTvId))
@@ -186,6 +189,34 @@ class MovieRepositoryTest : Spek({
                 verify(remote, atLeastOnce()).searchTvShows(any(), eq(dummyTvQuery))
                 assertNotNull(tvResult)
                 assertEquals(2, tvResult.size)
+            }
+        }
+    }
+
+    group("Favorite content") {
+        describe("Get favorite movies") {
+            it("result must be not null and expected result is equals with dummy") {
+                `when`(local.getFavoriteMovies()).thenReturn(dataSourceFactory)
+                movieRepository.getFavoriteMovies()
+
+                val movieList =
+                    Resource.success(PagedListUtil.mockPagedList(dummyMovies))
+                verify(local).getFavoriteMovies()
+                assertNotNull(movieList)
+                assertEquals(dummyMovies.size, movieList.data?.size)
+            }
+        }
+
+        describe("Get favorite tv shows") {
+            it("result must be not null and expected result is equals with dummy") {
+                `when`(local.getFavoriteTvShows()).thenReturn(dataSourceFactory)
+                movieRepository.getFavoriteTvShows()
+
+                val tvShowList =
+                    Resource.success(PagedListUtil.mockPagedList(dummyTvShows))
+                verify(local, atLeastOnce()).getFavoriteTvShows()
+                assertNotNull(tvShowList)
+                assertEquals(dummyTvShows.size, tvShowList.data?.size)
             }
         }
     }

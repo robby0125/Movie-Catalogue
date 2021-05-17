@@ -4,15 +4,18 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.arch.core.executor.TaskExecutor
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.atLeastOnce
 import com.nhaarman.mockitokotlin2.mock
 import com.robby.moviecatalogue.data.MovieRepository
 import com.robby.moviecatalogue.data.source.local.entity.ContentEntity
+import com.robby.moviecatalogue.utils.ContentType
 import com.robby.moviecatalogue.utils.DataDummy
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import kotlin.test.assertNotNull
 
 class DetailViewModelTest : Spek({
     beforeEachTest {
@@ -101,6 +104,50 @@ class DetailViewModelTest : Spek({
 
             viewModel.tvShowDetail.observeForever(observer)
             verify(observer, atLeastOnce()).onChanged(dummyTvShow)
+        }
+    }
+
+    describe("Check if setContentFavorite method is called") {
+        it("movie must be not null and add movie favorite") {
+            val dummyMovie = DataDummy.getDummyMoviesAsContent().first()
+            val dummyMovieId = dummyMovie.id
+
+            val movieResult = MutableLiveData<ContentEntity>()
+            movieResult.value = dummyMovie
+
+            `when`(movieRepository.getMovieDetail(dummyMovieId)).thenReturn(movieResult)
+            viewModel.setSelectedContentID(dummyMovieId)
+            viewModel.setContentType(ContentType.MOVIE)
+
+            viewModel.movieDetail.observeForever(observer)
+            verify(observer, atLeastOnce()).onChanged(dummyMovie)
+
+            val movie = viewModel.movieDetail.value
+            assertNotNull(movie)
+
+            viewModel.setFavorite()
+            verify(movieRepository, atLeastOnce()).setContentFavorite(any(), any())
+        }
+
+        it("tv show must be not null and add tv show favorite") {
+            val dummyTvShow = DataDummy.getDummyTvShowsAsContent().first()
+            val dummyTvShowId = dummyTvShow.id
+
+            val tvShowResult = MutableLiveData<ContentEntity>()
+            tvShowResult.value = dummyTvShow
+
+            `when`(movieRepository.getTvDetail(dummyTvShowId)).thenReturn(tvShowResult)
+            viewModel.setSelectedContentID(dummyTvShowId)
+            viewModel.setContentType(ContentType.TV)
+
+            viewModel.tvShowDetail.observeForever(observer)
+            verify(observer, atLeastOnce()).onChanged(dummyTvShow)
+
+            val tvShow = viewModel.tvShowDetail.value
+            assertNotNull(tvShow)
+
+            viewModel.setFavorite()
+            verify(movieRepository, atLeastOnce()).setContentFavorite(any(), any())
         }
     }
 })
